@@ -1,41 +1,216 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import axios from 'axios'
+import {
+    HeartOutlined,
+    HeartFilled,
+    EditOutlined,
+    MailOutlined,
+    PhoneOutlined,
+    GlobalOutlined,
+    DeleteFilled
+} from '@ant-design/icons';
+import { Button, Card, Row, Col, Modal, Form, Input } from 'antd';
 
 
 export class Home extends Component {
-    componentDidMount() {
-        if (!localStorage.getItem('loginid')) {
-            alert("Login first")
-            this.props.history.push("/login")
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            data: [], name: "", email: "", phone: "", website: "", femail: "", modalvisible: false
         }
-    }
-
-    logout = () => {
-        localStorage.removeItem('loginid')
-        localStorage.removeItem('name')
 
     }
+
+    handle = (e) => {
+
+        this.setState(e)
+    }
+
+    componentDidMount() {
+
+        axios.get("https://jsonplaceholder.typicode.com/users")
+            .then(res => {
+                this.setState({ data: res.data })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+
+    }
+
+    wish = (email) => {
+
+        var element = document.querySelector('[user="' + email + '"]')
+
+        element.classList.toggle("wish")
+
+        this.setState({})
+
+
+
+    }
+
+    delete = (email) => {
+        const data = this.state.data.filter(e => e.email != email)
+        this.setState({ data })
+    }
+
+    editok = (em) => {
+        const { name, email, phone, website } = this.state
+        let data = [...this.state.data]
+        for (var i in data) {
+            if (data[i].email == em) {
+
+                data[i].name = name
+
+                data[i].email = email
+                data[i].phone = phone
+                data[i].website = website
+
+                break
+            }
+
+        }
+        this.setState({ data, modalvisible: false })
+
+
+
+    }
+
+
+
     render() {
+        var fun = (email) => {
+            if (document.querySelector('[user="' + email + '"]')) {
+
+                return document.querySelector('[user="' + email + '"]').classList.contains("wish")
+            }
+            return false
+        }
         return (
-            <div>
-                <button style={{ textAlign: "right", border: "none", background: "transparent", height: "100%", color: "black", marginBottom: "20px", fontSize: "small", float: "right", marginRight: "8px", verticalAlign: "center", marginTop: 0, marginRight: "10px" }} onClick={this.logout}>Logout</button>
+            <>
 
-                <div style={{ width: "70%", margin: "auto", marginTop: "80px" }}>
+                <Modal maskStyle={{ background: "transparent" }} title="Basic Modal" visible={this.state.modalvisible} footer={
+                    [
+                        <Button >Cancel</Button>,
+                        <Button type="primary" htmlType="submit" form="mform" >Ok</Button>
 
-                    <div style={{ fontSize: "large", color: "purple", textAlign: "center", marginBottom: "90px", clear: "both", overflow: "auto" }}>
-                        Welcome  {localStorage.getItem('name')}
+                    ]
+                }>
+                    <Form id="mform" size="medium" initialValues={{
+                        ["name"]: this.state.name, ["email"]: this.state.email, ["phone"]: this.state.phone, ["website"]: this.state.website
+                    }} labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} onValuesChange={this.handle} onFinish={() => this.editok(this.state.femail)} >
 
-                    </div>
+                        <Form.Item
+                            name="name"
+                            label="Name"
 
-                    <div style={{ clear: "both", overflow: "auto" }}>
-                        <Link to="/addorder" style={{ textDecoration: "none", height: "100%", color: "crimson", marginBottom: "20px", fontSize: "large", float: "left", marginRight: "8px", verticalAlign: "center" }}>Add order +</Link>
-                        <Link to="/reports" style={{ textDecoration: "none", height: "100%", color: "crimson", marginBottom: "20px", fontSize: "large", float: "right", marginRight: "8px", verticalAlign: "center" }}>View Report</Link>
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "This field is required"
+                                },
+                            ]}
+                        >
+                            <Input style={{ borderRadius: "4px" }} />
+                        </Form.Item>
+                        <Form.Item
+                            name="email"
+                            label="Email"
 
-                    </div>
+                            rules={[
+                                {
+                                    type: 'email',
+                                    message: 'Invalid email',
+                                },
+                                {
+                                    required: true,
+                                    message: "This field is required"
 
 
-                </div>
-            </div >
+                                },
+                            ]}
+                        >
+                            <Input style={{ borderRadius: "4px" }} />
+                        </Form.Item>
+                        <Form.Item
+                            name="phone"
+                            label="Phone"
+
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "This field is required"
+
+                                },
+                            ]}
+                        >
+                            <Input style={{ borderRadius: "4px" }} />
+                        </Form.Item>
+                        <Form.Item
+                            name="website"
+                            label="Website"
+
+                            rules={[
+                                {
+                                    required: true,
+                                    message: "This field is required"
+
+                                },
+                            ]}
+                        >
+                            <Input style={{ borderRadius: "4px" }} />
+                        </Form.Item>
+                    </Form>
+                </Modal>
+                <Row>
+
+                    {this.state.data.map(user =>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={6}>
+                          
+                          <Card style={{ margin: "15px" }} cover={
+                                <div className="imgouter">
+                                    <img alt="img" src={`https://avatars.dicebear.com/v2/avataaars/${user.name}.svg?options[mood][]=happy`} height="200" width="200" />
+                                </div>
+                            }
+                                actions={
+                                    [
+                                        <Button className="op" type="text" user={user.email} onClick={() => { this.wish(user.email) }} icon={fun(user.email) ? <HeartFilled className="bodydeticon" style={{ color: "red" }} /> :
+                                            <HeartOutlined className="bodydeticon" style={{ color: "red" }} />}
+                                        />
+
+                                        ,
+                                        <Button icon={<EditOutlined className="bodydeticon" />} type="text" onClick={() => {
+                                            this.setState({ name: user.name, email: user.email, femail: user.email, phone: user.phone, website: user.website, modalvisible: true }, () => {
+                                            })
+                                        }} />
+
+                                        ,
+                                        <Button type="text" onClick={() => this.delete(user.email)} icon={<DeleteFilled className="bodydeticon" />} />
+                                    ]
+                                }>
+
+                                <h3>{user.name}</h3>
+                                <div className="bodydet">
+                                    <MailOutlined className="bodydeticon" />
+                                    <p style={{ marginLeft: "10px" }}>{user.email}</p>
+                                </div>
+                                <div className="bodydet">
+                                    <PhoneOutlined className="bodydeticon" />
+                                    <p style={{ marginLeft: "10px" }}>{user.phone}</p>
+                                </div>
+                                <div className="bodydet">
+                                    <GlobalOutlined className="bodydeticon" />
+                                    <p style={{ marginLeft: "10px" }}>{user.website}</p>
+                                </div>
+
+
+                            </Card>
+                        </Col>
+                    )}
+                </Row>
+            </>
         )
     }
 }
