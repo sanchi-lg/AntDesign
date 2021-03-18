@@ -19,7 +19,7 @@ export class Home extends Component {
         super(props)
 
         this.state = {
-            data: [], name: "", email: "", phone: "", website: "", femail: "", modalvisible: false, status: false
+            data: [], name: "", email: "", phone: "", website: "", femail: "", modalvisible: false, status: false,formRef:React.createRef()
         }
 
     }
@@ -92,22 +92,24 @@ export class Home extends Component {
             }
             return false
         }
+        
+        var initialValues={
+            ["name"]: this.state.name, ["email"]: this.state.email, ["phone"]: this.state.phone, ["website"]: this.state.website
+        }
+
         return (
             <>
-                {/* <div> <DatePicker /></div> */}
                 {this.state.status ?
                     <>
 
                         <Modal maskStyle={{ background: "transparent" }} title="Basic Modal" visible={this.state.modalvisible} footer={
                             [
-                                <Button >Cancel</Button>,
+                                <Button onClick={()=>this.setState({modalvisible:false})} >Cancel</Button>,
                                 <Button type="primary" htmlType="submit" form="mform" >Ok</Button>
 
                             ]
-                        }>
-                            <Form id="mform" size="medium" initialValues={{
-                                ["name"]: this.state.name, ["email"]: this.state.email, ["phone"]: this.state.phone, ["website"]: this.state.website
-                            }} labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} onValuesChange={this.handle} onFinish={() => this.editok(this.state.femail)} >
+                        } onCancel={()=>this.setState({modalvisible:false})}>
+                            <Form id="mform" ref={this.state.formRef} size="medium" initialValues={initialValues} labelCol={{ span: 8 }} wrapperCol={{ span: 16 }} onValuesChange={this.handle} onFinish={() => this.editok(this.state.femail)} >
 
                                 <Form.Item
                                     name="name"
@@ -175,7 +177,7 @@ export class Home extends Component {
 
                             {this.state.data.map(user =>
                                 <Col xs={24} sm={24} md={8} lg={8} xl={6}>
-                                  
+                                   
 
                                     <Card style={{ margin: "15px" }} cover={
                                         <div className="imgouter">
@@ -191,8 +193,7 @@ export class Home extends Component {
                                                 ,
                                                 <Button icon={<EditOutlined className="bodydeticon" />} type="text" onClick={() => {
                                                     this.setState({ name: user.name, email: user.email, femail: user.email, phone: user.phone, website: user.website, modalvisible: true }, () => {
-                                                        console.log(this.state);
-                                                    })
+                                                        this.state.formRef.current.resetFields()                                                    })
                                                 }} />
 
                                                 ,
